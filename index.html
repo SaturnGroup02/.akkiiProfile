@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>パスワード取得</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-label {
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        
+        .password-box {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: bold;
+            word-break: break-all;
+            color: #333;
+            position: relative;
+            margin-bottom: 10px;
+        }
+        
+        .copy-btn {
+            width: 100%;
+            padding: 8px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        
+        .copy-btn:hover {
+            background: #218838;
+        }
+        
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .message.show {
+            display: block;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 パスワード取得</h1>
+        
+        <form id="passwordForm">
+            <div class="form-group">
+                <label for="username">ユーザー名</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    placeholder="ユーザー名を入力" 
+                    required
+                    maxlength="50"
+                >
+            </div>
+            
+            <button type="submit">パスワード生成</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            生成中...
+        </div>
+        
+        <div class="result" id="result">
+            <div class="result-label">生成されたパスワード</div>
+            <div class="password-box" id="passwordDisplay"></div>
+            <button class="copy-btn" id="copyBtn">コピー</button>
+            <div class="message" id="message"></div>
+        </div>
+    </div>
+
+    <script>
+        // ランダム文字リスト
+        const RANDOM_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        
+        // パスワード生成関数
+        function generatePassword(username) {
+            const chars = RANDOM_CHARS.split('');
+            
+            // ブロック1: G◯d◯p◯
+            const block1 = 'G' + 
+                          chars[Math.floor(Math.random() * chars.length)] + 
+                          'd' + 
+                          chars[Math.floor(Math.random() * chars.length)] + 
+                          'p' + 
+                          chars[Math.floor(Math.random() * chars.length)];
+            
+            // ブロック2: ◯◯9◯◯
+            const block2 = chars[Math.floor(Math.random() * chars.length)] + 
+                          chars[Math.floor(Math.random() * chars.length)] + 
+                          '9' + 
+                          chars[Math.floor(Math.random() * chars.length)] + 
+                          chars[Math.floor(Math.random() * chars.length)];
+            
+            // ブロック3: ◯◯9◯◯
+            const block3 = chars[Math.floor(Math.random() * chars.length)] + 
+                          chars[Math.floor(Math.random() * chars.length)] + 
+                          '9' + 
+                          chars[Math.floor(Math.random() * chars.length)] + 
+                          chars[Math.floor(Math.random() * chars.length)];
+            
+            // ブロック4: P◯◯S◯
+            const block4 = 'P' + 
+                          chars[Math.floor(Math.random() * chars.length)] + 
+                          chars[Math.floor(Math.random() * chars.length)] + 
+                          'S' + 
+                          chars[Math.floor(Math.random() * chars.length)];
+            
+            return `${block1}-${block2}-${block3}-${block4}-${username}`;
+        }
+        
+        // Discord通知
+        async function notifyDiscord(username) {
+            try {
+                const response = await fetch('/api/notify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+                
+                if (!response.ok) {
+                    console.error('通知送信失敗');
+                }
+            } catch (error) {
+                console.error('通知エラー:', error);
+            }
+        }
+        
+        // フォーム送信
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            
+            if (!username) {
+                showMessage('ユーザー名を入力してください', 'error');
+                return;
+            }
+            
+            // ローディング表示
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('result').classList.remove('show');
+            
+            // パスワード生成
+            const password = generatePassword(username);
+            
+            // Discord通知
+            await notifyDiscord(username);
+            
+            // 少し待機（UX向上）
+            setTimeout(() => {
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('passwordDisplay').textContent = password;
+                document.getElementById('result').classList.add('show');
+                document.getElementById('message').classList.remove('show');
+            }, 500);
+        });
+        
+        // コピーボタン
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            const password = document.getElementById('passwordDisplay').textContent;
+            navigator.clipboard.writeText(password).then(() => {
+                showMessage('パスワードをコピーしました！', 'success');
+            }).catch(() => {
+                showMessage('コピーに失敗しました', 'error');
+            });
+        });
+        
+        // メッセージ表示
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message show ${type}`;
+            
+            setTimeout(() => {
+                messageEl.classList.remove('show');
+            }, 3000);
+        }
+        
+        // ページロード時にDiscord通知
+        window.addEventListener('load', () => {
+            notifyDiscord('Page Access');
+        });
+    </script>
+</body>
+</html>
