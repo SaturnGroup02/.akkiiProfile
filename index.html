@@ -150,7 +150,6 @@
     .prompt { color: var(--red); }
     .terminal-comment { color: var(--muted); margin-top: 8px; }
 
-    /* ===== 音楽プレイヤー ===== */
     .music-player audio {
       width: 100%; margin-top: 12px;
       filter: saturate(0.8) brightness(1.1);
@@ -181,50 +180,11 @@
       font-family: var(--body);
     }
 
-    /* ===== いいね ===== */
-    #like .section-heading { justify-content: flex-start; }
-    .like-row { display: flex; justify-content: center; padding: 6px 0 4px; }
-
-    .like-btn {
-      appearance: none;
-      border: 2px solid var(--red);
-      border-radius: 999px;
-      min-height: 56px;
-      padding: 10px 32px;
-      background: transparent;
-      color: var(--red);
-      font: 700 17px/1 var(--body);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      transition: background .2s, color .2s, transform .12s, opacity .2s;
-    }
-    .like-btn:hover { background: #362525; }
-    .like-btn:active { transform: scale(.97); }
-    .like-btn:focus-visible { outline: 2px solid var(--red); outline-offset: 4px; }
-    .like-btn[aria-pressed="true"] { background: var(--red); color: var(--bg); }
-    .like-btn:disabled { cursor: wait; opacity: .55; }
-
-    .like-heart { font-size: 22px; line-height: 1; }
-    .like-btn[aria-pressed="true"] .like-heart { animation: heart-pop .5s ease; }
-    @keyframes heart-pop {
-      0% { transform: scale(1); }
-      40% { transform: scale(1.5); }
-      100% { transform: scale(1); }
-    }
-    .like-num {
-      min-width: 1.6em; padding-left: 10px;
-      border-left: 1px solid currentColor;
-      font: 700 16px var(--mono); text-align: right;
-    }
-
     .site-footer {
       margin-top: 48px; padding: 28px 0 40px;
       border-top: 1px solid var(--line);
       color: var(--muted); font-size: 14px;
     }
-    .site-footer h2 { font-size: 20px; color: var(--ink); margin-bottom: 8px; }
 
     @media (max-width: 860px) {
       .site-nav {
@@ -393,90 +353,13 @@
         </div>
       </section>
 
-      <section id="like" aria-labelledby="like-title">
-        <div class="section-heading">
-          <h2 id="like-title" class="hand">↓いいねボタン↓</h2>
-        </div>
-        <div class="like-row">
-          <button id="likeBtn" class="like-btn" type="button" aria-pressed="false" disabled>
-            <span class="like-heart" aria-hidden="true">♡</span>
-            <span id="likeCount" class="like-num">…</span>
-          </button>
-        </div>
-      </section>
-
     </main>
 
     <footer class="site-footer" id="footer">
-      <h2 class="hand"></h2>
       <p>© 2026 Copyright: Last updated Oct. 17</p>
     </footer>
 
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
-  <script>
-    (function () {
-      var SUPABASE_URL      = 'https://wsvccysyubkrjgchyevm.supabase.co';
-      var SUPABASE_ANON_KEY = 'sb_publishable_TgdnlhEtqYGzWiSCL4fUUg_0Cv9Yl2n';
-      var PAGE_KEY          = 'akkii-profile-2026';
-
-      var btn     = document.getElementById('likeBtn');
-      var heartEl = btn.querySelector('.like-heart');
-      var countEl = document.getElementById('likeCount');
-
-      if (!window.supabase || !window.supabase.createClient) {
-        countEl.textContent = '–';
-        return;
-      }
-
-      var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: { persistSession: true, autoRefreshToken: true }
-      });
-
-      function render(count, liked) {
-        countEl.textContent = count;
-        btn.setAttribute('aria-pressed', String(!!liked));
-        heartEl.textContent = liked ? '♥' : '♡';
-      }
-
-      async function ensureSignedIn() {
-        var { data } = await sb.auth.getSession();
-        if (data && data.session) return data.session;
-        var { data: signIn, error } = await sb.auth.signInAnonymously();
-        if (error) throw error;
-        return signIn.session;
-      }
-
-      async function load() {
-        await ensureSignedIn();
-        var { data, error } = await sb.rpc('get_like_counts', { p_page: PAGE_KEY });
-        if (error) throw error;
-        var row = Array.isArray(data) ? data[0] : data;
-        render(row ? row.count : 0, row ? row.liked : false);
-        btn.disabled = false;
-      }
-
-      btn.addEventListener('click', async function () {
-        btn.disabled = true;
-        try {
-          await ensureSignedIn();
-          var { data, error } = await sb.rpc('toggle_like', { p_page: PAGE_KEY });
-          if (error) throw error;
-          var row = Array.isArray(data) ? data[0] : data;
-          render(row ? row.count : 0, row ? row.liked : false);
-        } catch (e) {
-          console.error('[like]', e);
-        } finally {
-          btn.disabled = false;
-        }
-      });
-
-      load().catch(function (e) {
-        console.error('[like load]', e);
-        countEl.textContent = '–';
-      });
-    })();
-  </script>
 </body>
 </html>
