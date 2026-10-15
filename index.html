@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>akkii🇯🇵 - プロフィール</title>
+  <title>akkii - プロフィール</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Yomogi&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
@@ -150,6 +150,7 @@
     .prompt { color: var(--red); }
     .terminal-comment { color: var(--muted); margin-top: 8px; }
 
+    /* ===== 音楽プレイヤー ===== */
     .music-player audio {
       width: 100%; margin-top: 12px;
       filter: saturate(0.8) brightness(1.1);
@@ -157,7 +158,30 @@
     .music-player audio::-webkit-media-controls-panel {
       background-color: rgba(241, 123, 120, 0.1);
     }
+    .music-player-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 8px;
+    }
+    .music-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--red);
+      box-shadow: 0 0 15px rgba(241, 123, 120, 0.35);
+      flex: 0 0 auto;
+    }
+    .music-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--red);
+      font-family: var(--body);
+    }
 
+    /* ===== いいね ===== */
     #like .section-heading { justify-content: flex-start; }
     .like-row { display: flex; justify-content: center; padding: 6px 0 4px; }
 
@@ -248,7 +272,7 @@
       <section class="welcome" aria-labelledby="welcome-title">
         <div class="welcome-copy">
           <p class="eyebrow">Good morning again today, Asia.</p>
-          <h1 id="welcome-title" class="hand">こんにちは！<br>akkiiです 🇯🇵</h1>
+          <h1 id="welcome-title" class="hand">こんにちは！<br>akkiiです</h1>
           <p class="intro-line">のんびり活動してるよー</p>
           <p class="intro-line">生み出したものをここに乗せるつもり</p>
         </div>
@@ -271,7 +295,7 @@
           <div class="terminal-body">
             <p><span class="prompt">&gt;</span> <strong>生年月日：</strong>2012年6月2日</p>
             <p><span class="prompt">&gt;</span> <strong>活動：</strong>チート、AI開発、ネタ動画</p>
-            <p><span class="prompt">&gt;</span> <strong>拠点：</strong>🇯🇵 日本 / 神奈川県 / 横浜市</p>
+            <p><span class="prompt">&gt;</span> <strong>拠点：</strong>日本 / 神奈川県 / 横浜市</p>
             <p class="terminal-comment">#自由に生きるそれが人類</p>
           </div>
         </div>
@@ -357,6 +381,10 @@
             <h2>playing… <span>室内系的Trackmaker</span></h2>
           </div>
           <div class="terminal-body music-player">
+            <div class="music-player-header">
+              <img src="music-icon.jpg" alt="室内系的Trackmaker" class="music-icon">
+              <div class="music-title">室内系的Trackmaker</div>
+            </div>
             <audio controls>
               <source src="bgm.mp3" type="audio/mpeg">
               お使いのブラウザは audio 要素に対応していません。
@@ -380,7 +408,7 @@
     </main>
 
     <footer class="site-footer" id="footer">
-      <h2 class="hand">また、のぞきにきてね。</h2>
+      <h2 class="hand"></h2>
       <p>© 2026 Copyright: Last updated Oct. 17</p>
     </footer>
 
@@ -389,18 +417,16 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
   <script>
     (function () {
-      var SUPABASE_URL      = 'https://YOUR-PROJECT.supabase.co';
-      var SUPABASE_ANON_KEY = 'YOUR-ANON-KEY';
-      var PAGE_KEY = 'akkii-profile-2026';
+      var SUPABASE_URL      = 'https://wsvccysyubkrjgchyevm.supabase.co';
+      var SUPABASE_ANON_KEY = 'sb_publishable_TgdnlhEtqYGzWiSCL4fUUg_0Cv9Yl2n';
+      var PAGE_KEY          = 'akkii-profile-2026';
 
       var btn     = document.getElementById('likeBtn');
       var heartEl = btn.querySelector('.like-heart');
       var countEl = document.getElementById('likeCount');
 
-      if (!window.supabase || !window.supabase.createClient ||
-          SUPABASE_URL.indexOf('YOUR-PROJECT') !== -1) {
+      if (!window.supabase || !window.supabase.createClient) {
         countEl.textContent = '–';
-        btn.title = 'Supabase の設定が未完了です';
         return;
       }
 
